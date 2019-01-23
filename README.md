@@ -172,7 +172,7 @@ router.delete('/:id', (req, res)=>{
 		for (let i = 0; i < foundAuthor.articles.length; i++) {
 			articleIds.push(foundAuthor.articles[i]._id);
 		}
-		Article.remove(
+		Article.deleteMany(
 			{
 				_id : {
 					$in: articleIds
