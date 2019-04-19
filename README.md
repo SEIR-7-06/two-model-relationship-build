@@ -90,10 +90,11 @@ controllers/articles.js:
 
 ```javascript
 router.get('/:id', (req, res)=>{
-    Article.findById(req.params.id, (err, foundArticle)=>{
-        Author.findOne({'articles._id':req.params.id}, (err, foundAuthor)=>{
+    Articles.findById(req.params.id, (err, foundArticle)=>{
+        Author.findOne({'articles': req.params.id}, (err, foundAuthor)=>{
+          console.log(foundAuthor, foundArticle);
             res.render('articles/show.ejs', {
-                author:foundAuthor,
+                author: foundAuthor,
                 article: foundArticle
             });
         })
