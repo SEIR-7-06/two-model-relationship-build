@@ -21,7 +21,7 @@
 models/authors.js
 
 ```javascript
-const Article = require('./models/articles.js)
+const Article = require('./models/articles.js')
 
 const authorSchema = new mongoose.Schema({
   name: String,
