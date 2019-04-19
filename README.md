@@ -130,7 +130,7 @@ views/articles/show.ejs:
 ## Display Author's Articles With Links On Author Show Page
 
 authors/show route
-```
+```javascript
 router.get('/:id', (req, res) => {
 
   Authors.findById(req.params.id)
