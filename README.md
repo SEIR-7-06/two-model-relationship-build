@@ -17,18 +17,19 @@
 models/authors.js
 
 ```javascript
-const mongoose = require('mongoose');
-const Article = require('./articles.js');
-
-const authorSchema = mongoose.Schema({
-	name: String,
-	articles: [Article.schema]
+const authorSchema = new mongoose.Schema({
+  name: String,
+  articles: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Article'
+  }]
 });
-
-const Author = mongoose.model('Author', authorSchema);
-
-module.exports = Author;
 ```
+
+- `[]` lets the author schema know that each authors's `articles` attribute will hold an array.
+- The object inside the `[]` describes what kind of elements the array will hold.
+- Giving `type: Schema.Types.ObjectId` tells the schema the `articles` array will hold ObjectIds. That's the type of that unique `_id` that Mongo automatically generates for us (something like `55e4ce4ae83df339ba2478c6`).
+- `ref: Article` tells the schema we will only be putting ObjectIds of  `Article` documents inside the `articles` array.
 
 ## Display Authors on New Article Page
 
@@ -70,16 +71,20 @@ Create A Select Element in views/articles/new.ejs:
 controllers/articles.js:
 
 ```javascript
-router.post('/', (req, res)=>{
-    Author.findById(req.body.authorId, (err, foundAuthor)=>{
-        Article.create(req.body, (err, createdArticle)=>{ //req.body.authorId is ignored due to Schema
+Articles.create(req.body, (err, createdArticle) => {
+        if(err){
+          res.send(err);
+        } else {
+          Author.findById(req.body.authorId, (error, foundAuthor) => {
+            console.log(foundAuthor, 'foundAuthor');
             foundAuthor.articles.push(createdArticle);
-            foundAuthor.save((err, data)=>{
-                res.redirect('/articles');
-            });
-        });
-    });
-});
+            foundAuthor.save((err, savedAuthor) => {
+              console.log(savedAuthor, 'savedNewAuthor')
+              res.redirect('/articles');
+            })
+          })
+        }
+      })
 ```
 
 **NOTE: req.body.authorId is ignored when creating Article due to Article Schema**
@@ -90,17 +95,24 @@ controllers/articles.js:
 
 ```javascript
 router.get('/:id', (req, res)=>{
-    Articles.findById(req.params.id, (err, foundArticle)=>{
-        Author.findOne({'articles': req.params.id}, (err, foundAuthor)=>{
-          console.log(foundAuthor, foundArticle);
-            res.render('articles/show.ejs', {
+
+    Author.findOne({'articles': req.params.id})
+    	.populate('articles')
+	.exec((err, foundAuthor) => {
+      	console.log(foundAuthor, 'foundAuthor');
+        res.render('articles/show.ejs', {
                 author: foundAuthor,
-                article: foundArticle
+                article: foundAuthor.articles[0]
             });
-        })
-    });
+    })
 });
 ```
+
+1. Line 1: We call a method to find only **one** `Author` document that matches the id: `req.params.id` (Which is the article id.
+
+1. Line 2: We ask the articles array within that `Author` document to fetch the actual `Article` document instead of just  its `ObjectId`.
+
+1. Line 3: When we use `find` without a callback, then `populate`, like here, we can put a callback inside an `.exec()` method call. Technically we have made a query with `find`, but only executed it when we call `.exec()`.
 
 views/articles/show.ejs:
 
@@ -110,6 +122,25 @@ views/articles/show.ejs:
 ```
 
 ## Display Author's Articles With Links On Author Show Page
+
+authors/show route
+```
+router.get('/:id', (req, res) => {
+
+  Authors.findById(req.params.id)
+  .populate('articles')
+  .exec((err, foundAuthor) => {
+    if(err) console.log(err);
+      console.log(foundAuthor)
+
+      res.render('authors/show.ejs', {
+        author: foundAuthor
+      });
+  })
+});
+
+
+```
 
 views/authors/show.ejs:
 
@@ -130,39 +161,22 @@ controllers/articles.js
 
 ```javascript
 router.delete('/:id', (req, res)=>{
-    Article.findByIdAndRemove(req.params.id, (err, foundArticle)=>{
-        Author.findOne({'articles._id':req.params.id}, (err, foundAuthor)=>{
-	
-            const index = foundAuthor.articles.findIndex((elem) => {
-		return elem === req.params.id
-       	    });
-
-     	    foundAuthor.articles.splice(index, 1);
-            foundAuthor.save((err, data)=>{
-                res.redirect('/articles');
-            });
-        });
-    });
+  Article.findByIdAndRemove(req.params.id, (err, deletedArticle)=>{
+    Author.findOne({'articles': req.params.id}, (err, foundAuthor) => {
+         if(err){
+            res.send(err);
+          } else {
+            foundAuthor.articles.remove(req.params.id);
+            foundAuthor.save((err, updatedAuthor) => {
+              console.log(updatedAuthor);
+              res.redirect('/articles');
+            })
+          }
+    })
+  });
 });
 ```
 
-## Updating an Article Updates An Author's Articles List
-
-controllers/articles.js
-
-```javascript
-router.put('/:id', (req, res)=>{
-    Article.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, updatedArticle)=>{
-        Author.findOne({ 'articles._id' : req.params.id }, (err, foundAuthor)=>{
-            foundAuthor.articles.id(req.params.id).remove();
-            foundAuthor.articles.push(updatedArticle);
-            foundAuthor.save((err, data)=>{
-                res.redirect('/articles/'+req.params.id);
-            });
-        });
-    });
-});
-```
 
 ## Deleting an Author Deletes The Associated Articles
 
@@ -173,22 +187,25 @@ const Article = require('../models/articles.js');
 
 //...farther down the file
 router.delete('/:id', (req, res)=>{
-	Author.findByIdAndRemove(req.params.id, (err, foundAuthor)=>{
-		const articleIds = [];
-		for (let i = 0; i < foundAuthor.articles.length; i++) {
-			articleIds.push(foundAuthor.articles[i]._id);
-		}
-		Article.deleteMany(
-			{
-				_id : {
-					$in: articleIds
-				}
-			},
-			(err, data)=>{
-				res.redirect('/authors');
-			}
-		);
-	});
+	Authors.findByIdAndRemove(req.params.id, (err, deletedAuthor) => {
+    if(err) {
+      console.error(err);
+      res.send("it didn't work check the console")
+    }
+    else {
+      // we want to get all the article id's associated
+
+      Articles.remove({
+        _id: {
+          $in: deletedAuthor.articles
+        }
+      }, (err, data) => {
+        console.log(data, ' dat')
+        res.redirect('/authors')
+      });
+
+    }
+  })
 });
 ```
 
@@ -198,17 +215,21 @@ controllers/articles.js
 
 ```javascript
 router.get('/:id/edit', (req, res)=>{
-	Article.findById(req.params.id, (err, foundArticle)=>{
-		Author.find({}, (err, allAuthors)=>{
-			Author.findOne({'articles._id':req.params.id}, (err, foundArticleAuthor)=>{
-				res.render('articles/edit.ejs', {
-					article: foundArticle,
-					authors: allAuthors,
-					articleAuthor: foundArticleAuthor
-				});
-			});
-		});
-	});
+  Author.find({}, (err, allAuthors) => {
+    Author.findOne({'articles': req.params.id})
+    .populate('articles')
+    .exec((err, foundArticleAuthor) => {
+        if(err){
+          res.send(err);
+        } else {
+          res.render('articles/edit.ejs', {
+            article: foundArticleAuthor.articles[0],
+            authors: allAuthors,
+            articleAuthor: foundArticleAuthor
+          });
+        }
+    })
+  })
 });
 ```
 
@@ -243,8 +264,9 @@ router.put('/:id', (req, res)=>{
     Article.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, updatedArticle)=>{
         Author.findOne({ 'articles._id' : req.params.id }, (err, foundAuthor)=>{
 		if(foundAuthor._id.toString() !== req.body.authorId){
-			foundAuthor.articles.id(req.params.id).remove();
+			foundAuthor.articles.remove(req.params.id);
 			foundAuthor.save((err, savedFoundAuthor)=>{
+			
 				Author.findById(req.body.authorId, (err, newAuthor)=>{
 					newAuthor.articles.push(updatedArticle);
 					newAuthor.save((err, savedNewAuthor)=>{
@@ -253,11 +275,7 @@ router.put('/:id', (req, res)=>{
 				});
 			});
 		} else {
-			foundAuthor.articles.id(req.params.id).remove();
-			foundAuthor.articles.push(updatedArticle);
-			foundAuthor.save((err, data)=>{
-		                res.redirect('/articles/'+req.params.id);
-			});
+			res.redirect('/articles/' + req.params.id)
 		}
         });
     });
