@@ -12,6 +12,10 @@
 1. Deleting an Author Deletes The Associated Articles
 1. Change Author When Editing an Article
 
+### Relevant Documentation
+
+1. [Populate](https://mongoosejs.com/docs/populate.html)
+
 ## Add Articles Array to Author Model
 
 models/authors.js
