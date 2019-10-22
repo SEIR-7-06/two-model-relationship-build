@@ -100,16 +100,26 @@ Articles.create(req.body, (err, createdArticle) => {
 controllers/articles.js:
 
 ```javascript
+// articles show route
+// :id is going to be the articles id
 router.get('/:id', (req, res)=>{
-
-    Author.findOne({'articles': req.params.id})
-    	.populate('articles')
-	.exec((err, foundAuthor) => {
-      	console.log(foundAuthor, 'foundAuthor');
+  // req.params.id is an article id
+  Author.findOne({'articles': req.params.id})
+    .populate(
+        {
+        path: 'articles',
+        match: {_id: req.params.id}
+        }) // this pulls in the articles document
+    .exec((err, foundAuthor) => { //exec executes the query
+      console.log(foundAuthor, ' this is found AUthorrrr')
+      if(err){
+        res.send(err);
+      } else {
         res.render('articles/show.ejs', {
-                author: foundAuthor,
-                article: foundAuthor.articles[0]
-            });
+          author: foundAuthor,
+          article: foundAuthor.articles[0]
+        });
+      }
     })
 });
 ```
