@@ -134,7 +134,7 @@ authors/show route
 router.get('/:id', (req, res) => {
 
   Authors.findById(req.params.id)
-  .populate({path: 'articles', match: {_id: req.params.id}})
+  .populate({path: 'articles'})
   .exec((err, foundAuthor) => {
     if(err) console.log(err);
       console.log(foundAuthor)
