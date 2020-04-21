@@ -12,6 +12,81 @@
 1. Deleting an Author Deletes The Associated Articles
 1. Change Author When Editing an Article
 
+
+
+### Numerical Categories for Relationships
+
+### One-to-One
+
+Each person has one brain, and each (living human) brain belongs to one person.
+
+![one to one erd example](https://cloud.githubusercontent.com/assets/3254910/18140904/4d85c04e-6f6c-11e6-8301-c06bacff3dd3.png)
+
+One-to-one relationships can sometimes just be modeled with simple attributes. A person and a brain are both complex enough that we might want to have their data in different models, with lots of different attributes on each.
+
+
+
+
+
+
+### One-to-Many
+
+Each leaf "belongs to" the one tree it grew from, and each tree "has many" leaves.
+
+![one to many erd example](https://cloud.githubusercontent.com/assets/3254910/18182445/e4bddb6c-7044-11e6-9099-314b773724f3.png)
+
+
+### Many-to-Many
+
+Each student "has many" classes they attend, and each class "has many" students.
+
+
+![many to many erd example](https://cloud.githubusercontent.com/assets/3254910/18140903/4c56c3ee-6f6c-11e6-9b6d-4c6ffae81323.png)
+
+
+#### Entity Relationship Diagrams
+
+Entity relationship diagrams (ERDs) represent information about the numerical relationships between data, or entities.
+
+![entity relationship diagram example](https://cloud.githubusercontent.com/assets/3254910/18141666/439d9392-6f6f-11e6-953f-c91415b85f3f.png)
+
+
+Note: In the example above, all of the Item1, Item2, Item3 under each heading are standing in for attributes.
+
+[More guidelines for ERDs](http://docs.oracle.com/cd/A87860_01/doc/java.817/a81358/05_dev1.htm)
+
+#### Check for Understanding
+
+Come up with an example of related data.  Draw the ERD for your relationship, including a few attributes for each model.
+
+### Association Categories for Mongoose
+
+**Embedded Data** is directly nested *inside* of other data. Each record has a copy of the data.
+
+
+It is often *efficient* to embed data because you don't have to make a separate request or a separate database query -- the first request or query gets you all the information you need.  
+
+
+<img src="https://i.imgur.com/aMG36rT.png" width="60%">
+
+
+**Referenced Data** is stored as an *id* inside other data. The id can be used to look up the information. All records that reference the same data look up the same copy.
+
+
+It is usually easier to keep referenced records *consistent* because the data is only stored in one place and only needs to be updated in one place.  
+
+![image](https://cloud.githubusercontent.com/assets/6520345/21190300/2c091f08-c1d6-11e6-89ed-0459874edf3a.png)
+[Source: MongoDB docs](https://docs.mongodb.com/v3.2/tutorial/model-referenced-one-to-many-relationships-between-documents/)
+
+
+While the question of one-to-one, one-to-many, or  many-to-many is often determined by real-world characteristics of a relationship, the decision to embed or reference data is a design decision.  
+
+There are tradeoffs, such as between *efficiency* and *consistency*, depending on which one you choose.  
+
+When using Mongo and Mongoose, though, many-to-many relationships often involve referenced associations, while one-to-many often involve embedding data.
+
+
+
 ### Relevant Documentation
 
 1. [Populate](https://mongoosejs.com/docs/populate.html)
