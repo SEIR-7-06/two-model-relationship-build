@@ -478,15 +478,15 @@ Our goal is to populate this `articles` array with actual article data.
 We'll update our Author Show Route from this
 ```js
 router.get('/:id', (req, res) => {
-	db.Author.findById(req.params.id, (err, foundAuthor) => {
-		if (err) return console.log(err);
+  db.Author.findById(req.params.id, (err, foundAuthor) => {
+    if (err) return console.log(err);
 
     console.log(foundAuthor)
 
-		res.render('authors/authorsShow.ejs', {
+    res.render('authors/authorsShow.ejs', {
       author: foundAuthor
     });
-	});
+  });
 });
 ```
 
@@ -608,9 +608,7 @@ In `controllers/articlesController.js`
 ...
 router.delete('/:id', (req, res) => {
   db.Article.findByIdAndDelete(req.params.id, (err, deletedArticle) => {
-    if (err) {
-      return res.send(err);
-    }
+    if (err) return console.log(err);
 
     db.Author.findByIdAndUpdate(
       deletedArticle.author,
