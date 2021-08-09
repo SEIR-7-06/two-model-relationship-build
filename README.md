@@ -28,11 +28,6 @@ Each person has one brain, and each (living human) brain belongs to one person.
 
 One-to-one relationships can sometimes just be modeled with simple attributes. A person and a brain are both complex enough that we might want to have their data in different models, with lots of different attributes on each.
 
-
-
-
-
-
 ### One-to-Many
 
 Each leaf "belongs to" the one tree it grew from, and each tree "has many" leaves.
@@ -80,6 +75,7 @@ It is often *efficient* to embed data because you don't have to make a separate 
 It is usually easier to keep referenced records *consistent* because the data is only stored in one place and only needs to be updated in one place.  
 
 ![image](https://cloud.githubusercontent.com/assets/6520345/21190300/2c091f08-c1d6-11e6-89ed-0459874edf3a.png)
+
 [Source: MongoDB docs](https://docs.mongodb.com/v3.2/tutorial/model-referenced-one-to-many-relationships-between-documents/)
 
 
@@ -95,9 +91,19 @@ When using Mongo and Mongoose, though, many-to-many relationships often involve 
 
 1. [Populate](https://mongoosejs.com/docs/populate.html)
 
-## Add an Author Property to the Article Schema
+
+# Code Along Activity
 
 For today's activity, we'll be using **Referenced Data** to create a relationship between our authors and our articles.
+
+Our two main features are
+1. To be able to view an Article and see the Author for that Article.
+2. To be able to view an Author and see a list of Articles that Author has written.
+
+---
+## Add an Author Property to the Article Schema
+
+We'll start by updating the Article Schema, to accomodate storing an Author information.
 
 In `./models/Article.js`
 ```js
