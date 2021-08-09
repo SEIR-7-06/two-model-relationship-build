@@ -230,16 +230,16 @@ node dropData.js
 
 ## Test the Form and Add a New Article
 
-We'll find the Article Create route and add a `console.log(newArticle)` to inspect the new Article that gets created.
+We'll find the Article Create route and add a `console.log(createdArticle)` to inspect the new Article that gets created.
 
 In `controllers/articlesController.js`
 ```js
 router.post("/", (req, res) => {
   // console.log(req.body);
-  db.Article.create(req.body, (err, newArticle) => {
+  db.Article.create(req.body, (err, createdArticle) => {
     if (err) return console.log(err);
 
-    console.log(newArticle);
+    console.log(createdArticle);
 
     res.redirect('/articles');
   });
