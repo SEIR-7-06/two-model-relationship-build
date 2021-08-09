@@ -192,6 +192,42 @@ router.get("/new", (req, res) => {
 
 Now, when visiting the form to add a new Author, we should see a select box dropdown to pick from the list of our authors! If we don't have any authors, the dropdown will be empty. Let's add some authors, and then visit the Article New page to test our select box dropdown.
 
+## Delete Our Old Data
+
+We are going to be changing the structure of our data. The new articles that we add will now have an `author` field. For this reason it will be helpful to delete our existing data and start clean.
+
+Create a file in the root of your project called `dropData.js`.
+
+```bash
+touch dropData.js
+```
+
+We will add two queries, one to delete all authors and one to delete all articles.
+
+```js
+const db = require('./models/index.js');
+
+db.Author.deleteMany({}, (err) => {
+  if (err) return console.log(err);
+
+  db.Article.deleteMany({}, (err) => {
+    if (err) return console.log(err);
+
+    console.log('Deleted all authors and articles');
+
+    process.exit();
+  });
+});
+```
+
+Notice the second query is found inside the callback to the first query. This is because we'll run the second query only after the first one has completed. Afterwards we log out a message to ourselves indicated the queries have completed and then we exit the node process with `process.exit()`.
+
+We'll now run our delete queries.
+
+```bash
+node dropData.js
+```
+
 ## Test the Form and Add a New Article
 
 We'll find the Article Create route and add a `console.log(newArticle)` to inspect the new Article that gets created.
@@ -361,6 +397,13 @@ const author1 = {
 }
 ```
 
+## Delete Existing Data
+
+We are going to be changing the structure of our data agian. Run the `dropData.js` file to delete your existing data.
+
+```bash
+node dropData.js
+```
 
 ## Add Article to Author When Creating an Article
 
