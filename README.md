@@ -455,12 +455,12 @@ Inside the callback to our `.findById()` query let's log out the foundAuthor wit
 In controllers/authorsController.js
 ```js
 router.get('/:id', (req, res) => {
-	db.Author.findById(req.params.id, (err, foundAuthor) => {
-		if (err) return console.log(err);
+  db.Author.findById(req.params.id, (err, foundAuthor) => {
+    if (err) return console.log(err);
 
     console.log(foundAuthor);
 
-		res.render('authors/authorsShow.ejs', {
+    res.render('authors/authorsShow.ejs', {
       author: foundAuthor
     });
   });
